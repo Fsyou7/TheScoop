@@ -2,7 +2,9 @@
 let database = {
   users: {},
   articles: {},
-  nextArticleId: 1
+  nextArticleId: 1,
+  comments: {},
+  nextCommentId: 1
 };
 
 const routes = {
@@ -26,7 +28,21 @@ const routes = {
   },
   '/articles/:id/downvote': {
     'PUT': downvoteArticle
+  },
+  '/comments': {
+    'POST': getOrCreateComment
+  },
+  '/comments/:id': {
+    'PUT': updateComment,
+    'DELETE': deleteComment
+  },
+  '/comments/:id/upvote': {
+    'PUT': upvoteComment
+  },
+  '/comments/:id/downvote': {
+    'PUT': downvoteComment
   }
+
 };
 
 function getUser(url, request) {
@@ -76,6 +92,13 @@ function getOrCreateUser(url, request) {
   }
 
   return response;
+}
+
+
+function getOrCreateComment(url, request){
+  const comment = request.body.comment;
+  
+  if (){}
 }
 
 function getArticles(url, request) {
@@ -239,6 +262,8 @@ function downvote(item, username) {
   }
   return item;
 }
+
+
 
 // Write all code above this line.
 
