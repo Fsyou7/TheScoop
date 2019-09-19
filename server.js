@@ -33,14 +33,14 @@ const routes = {
     'POST': getOrCreateComment
   },
   '/comments/:id': {
-    'PUT': updateComment,
-    'DELETE': deleteComment
+    // 'PUT': updateComment,
+    // 'DELETE': deleteComment
   },
   '/comments/:id/upvote': {
-    'PUT': upvoteComment
+    // 'PUT': upvoteComment
   },
   '/comments/:id/downvote': {
-    'PUT': downvoteComment
+    // 'PUT': downvoteComment
   }
 
 };
@@ -96,9 +96,22 @@ function getOrCreateUser(url, request) {
 
 
 function getOrCreateComment(url, request){
+  //Receives comment information from comment property of request body
   const comment = request.body.comment;
-  
-  if (){}
+  //Creates new comment and adds it to database, returns a 201 response with comment on comment property of response body
+  const response = {
+    id: database.nextCommentId,
+    body: request.body,
+    username: request.body.username,
+    articleId: request.body.article.id,
+    upvotedBy: [],
+    downvotedBy: []
+  };
+
+  //If body isn’t supplied, user with supplied username doesn’t exist, or article with supplied article ID doesn’t exist, returns a 400 response
+  if (!request.body || !request.user[username] || !article.articleId){
+    response.status = 400;
+  }
 }
 
 function getArticles(url, request) {
