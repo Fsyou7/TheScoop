@@ -30,7 +30,7 @@ const routes = {
     'PUT': downvoteArticle
   },
   '/comments': {
-    'POST': getOrCreateComment
+    'POST': createComment
   },
   '/comments/:id': {
     // 'PUT': updateComment,
@@ -66,7 +66,6 @@ function getUser(url, request) {
   } else {
     response.status = 400;
   }
-
   return response;
 }
 
@@ -95,24 +94,7 @@ function getOrCreateUser(url, request) {
 }
 
 
-function getOrCreateComment(url, request){
-  //Receives comment information from comment property of request body
-  const comment = request.body.comment;
-  //Creates new comment and adds it to database, returns a 201 response with comment on comment property of response body
-  const response = {
-    id: database.nextCommentId,
-    body: request.body,
-    username: request.body.username,
-    articleId: request.body.article.id,
-    upvotedBy: [],
-    downvotedBy: []
-  };
 
-  //If body isn’t supplied, user with supplied username doesn’t exist, or article with supplied article ID doesn’t exist, returns a 400 response
-  if (!request.body || !request.user[username] || !article.articleId){
-    response.status = 400;
-  }
-}
 
 function getArticles(url, request) {
   const response = {};
@@ -173,6 +155,42 @@ function createArticle(url, request) {
     response.status = 400;
   }
 
+  return response;
+}
+
+function createComment(url, request){
+  //Receives comment information from comment property of request body
+  const requestComment = request.body && request.body.comment;
+  const response = {};
+  //console.log(request);
+  //console.log(requestComment);
+  //Creates new comment and adds it to database, returns a 201 response with comment on comment property of response body
+  if (requestComment && requestComment.body && requestComment.username && requestComment.articleId){
+    //console.log(`requestComment conditions met`);
+    const comment = {
+      id: database.nextCommentId++,
+      body: requestComment.body,
+      username: requestComment.username,
+      articleId: requestComment.articleID,
+      upvotedBy: [],
+      downvotedBy: []
+    };
+    
+    database.comments[comment.id] = comment;
+    //comment.log(database.users[article.username].articleIds);
+    // add a newly created comment's ID to the author's comment IDs
+    database.users[comment.username].commentIds.push(comment.id);
+    //add a newly created comment's ID to the article's comment IDs
+    //database.articles.commentIds.push(comment.id);
+    //database.users
+    // console.log(comment);
+    response.body = {comment: comment};
+    response.status = 201;
+    //If body isn’t supplied, user with supplied username doesn’t exist, or article with supplied article ID doesn’t exist, returns a 400 response
+  } else {
+    response.status = 400;
+  }
+  console.log(response);
   return response;
 }
 
