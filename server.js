@@ -159,19 +159,24 @@ function createArticle(url, request) {
 }
 
 function createComment(url, request){
-  //Receives comment information from comment property of request body
+  //Receives comment information from comment property of request body 
   const requestComment = request.body && request.body.comment;
   const response = {};
-  //console.log(request);
-  //console.log(requestComment);
+  
   //Creates new comment and adds it to database, returns a 201 response with comment on comment property of response body
-  if (requestComment && requestComment.body && requestComment.username && requestComment.articleId){
+
+  //Fast fail conditions for input checking
+  //If body isn’t supplied, user with supplied username doesn’t exist, or article with supplied article ID doesn’t exist, returns a 400 response 
+  if (requestComment && requestComment.body && requestComment.username && requestComment.articleId && 
+    database.users.existing_user.username.includes(requestComment.username) && Object.keys(database.articles).includes(requestComment.articleId.toString())){
     //console.log(`requestComment conditions met`);
+    //should return a 400 response if the comment's user does not exist
+    // should return a 400 response if the comment's article does not exist
     const comment = {
       id: database.nextCommentId++,
       body: requestComment.body,
       username: requestComment.username,
-      articleId: requestComment.articleID,
+      articleId: requestComment.articleId,
       upvotedBy: [],
       downvotedBy: []
     };
@@ -181,7 +186,7 @@ function createComment(url, request){
     // add a newly created comment's ID to the author's comment IDs
     database.users[comment.username].commentIds.push(comment.id);
     //add a newly created comment's ID to the article's comment IDs
-    //database.articles.commentIds.push(comment.id);
+    database.articles[requestComment.articleId].commentIds.push(comment.id);
     //database.users
     // console.log(comment);
     response.body = {comment: comment};
@@ -190,9 +195,10 @@ function createComment(url, request){
   } else {
     response.status = 400;
   }
-  console.log(response);
+
   return response;
 }
+
 
 function updateArticle(url, request) {
   const id = Number(url.split('/').filter(segment => segment)[1]);
@@ -293,7 +299,6 @@ function downvote(item, username) {
   }
   return item;
 }
-
 
 
 // Write all code above this line.
