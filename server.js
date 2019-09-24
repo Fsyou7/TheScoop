@@ -34,7 +34,7 @@ const routes = {
   },
   '/comments/:id': {
     'PUT': updateComment,
-    // 'DELETE': deleteComment
+    'DELETE': deleteComment
   },
   '/comments/:id/upvote': {
     // 'PUT': upvoteComment
@@ -266,6 +266,30 @@ function deleteArticle(url, request) {
   }
 
   return response;
+}
+
+
+// DELETE
+// Receives comment ID from URL parameter
+// Deletes comment from database and removes all references to its ID from corresponding user and article models, returns 204 response
+// If no ID is supplied or comment with supplied ID doesn’t exist, returns 404 response
+
+function deleteComment(url, request){
+  const id = Number(url.split('/').filter(segment => segment)[1]);
+  const savedComment = database.comments[id.toString()];
+  // console.log(savedComment);
+  console.log(database);
+  // console.log(database.users.user.commentIds);
+
+  if(savedComment){
+    //Delete comment from database
+    database.comments[id] = null;
+    //Remove reference from user model
+    const userIds = database.comments[id].username;
+    console.log('userIds: ');
+    console.log(userIds);
+    // userCommentIds.splice(userCommentIds.indexOf(id), 1);
+  }
 }
 
 function upvoteArticle(url, request) {
