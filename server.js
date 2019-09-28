@@ -7,6 +7,10 @@ let database = {
   nextCommentId: 1
 };
 
+const Figg = require('figg')
+const config = new Figg()
+config.save()
+
 const routes = {
   '/users': {
     'POST': getOrCreateUser
@@ -37,10 +41,10 @@ const routes = {
     'DELETE': deleteComment
   },
   '/comments/:id/upvote': {
-    // 'PUT': upvoteComment
+    'PUT': upvoteComment
   },
   '/comments/:id/downvote': {
-    // 'PUT': downvoteComment
+    'PUT': downvoteComment
   }
 
 };
@@ -276,20 +280,26 @@ function deleteArticle(url, request) {
 
 function deleteComment(url, request){
   const id = Number(url.split('/').filter(segment => segment)[1]);
-  const savedComment = database.comments[id.toString()];
-  // console.log(savedComment);
-  console.log(database);
-  // console.log(database.users.user.commentIds);
+  const savedComment = database.comments[id];
+  const response = {};
 
   if(savedComment){
     //Delete comment from database
     database.comments[id] = null;
+    
     //Remove reference from user model
-    const userIds = database.comments[id].username;
-    console.log('userIds: ');
-    console.log(userIds);
-    // userCommentIds.splice(userCommentIds.indexOf(id), 1);
-  }
+    const commentUserIds = database.users[savedComment.username].commentIds;
+    commentUserIds.splice(commentUserIds.indexOf(id), 1);
+    
+    //Remove reference from article model
+    const commentArticleIds = database.articles[savedComment.articleId].commentIds;
+    commentArticleIds.splice(commentArticleIds.indexOf(id), 1);
+    response.status = 204;
+  } else {
+    response.status = 404;
+  } 
+  
+  return response;
 }
 
 function upvoteArticle(url, request) {
@@ -302,6 +312,25 @@ function upvoteArticle(url, request) {
     savedArticle = upvote(savedArticle, username);
 
     response.body = {article: savedArticle};
+    response.status = 200;
+  } else {
+    response.status = 400;
+  }
+
+  return response;
+}
+
+
+function upvoteComment(url, request){
+  const id = Number(url.split('/').filter(segment => segment)[1]);
+  const username = request.body && request.body.username;
+  let savedComment = database.comments[id];
+  const response = {};
+
+  if (savedComment && database.users[username]){
+    savedComment = upvote(savedComment, username);
+
+    response.body = {comment: savedComment};
     response.status = 200;
   } else {
     response.status = 400;
@@ -328,6 +357,26 @@ function downvoteArticle(url, request) {
   return response;
 }
 
+
+function downvoteComment(url, request){
+  const id = Number(url.split('/').filter(segment => segment)[1]);
+  const username = request.body && request.body.username;
+  let savedComment = database.comments[id];
+  const response = {};
+
+  if (savedComment && database.users[username]) {
+    savedComment = downvote(savedComment, username);
+
+    response.body = {comment: savedComment};
+    response.status = 200;
+  } else {
+    response.status = 400;
+  }
+
+  return response;
+}
+
+
 function upvote(item, username) {
   if (item.downvotedBy.includes(username)) {
     item.downvotedBy.splice(item.downvotedBy.indexOf(username), 1);
@@ -346,6 +395,20 @@ function downvote(item, username) {
     item.downvotedBy.push(username);
   }
   return item;
+}
+
+
+// Writes the current value of database to a YAML file
+function saveDatabase(){
+  
+  config.save();
+}
+
+// Reads a YAML file containing the database and returns a JavaScript object representing the database
+function loadDatabase(){
+  let myConfig = config.load("./config.yml");
+
+  return myConfig;
 }
 
 
