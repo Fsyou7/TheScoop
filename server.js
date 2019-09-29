@@ -7,9 +7,9 @@ let database = {
   nextCommentId: 1
 };
 
-const Figg = require('figg')
-const config = new Figg()
-config.save()
+const Figg = require('figg');
+const config = new Figg();
+
 
 const routes = {
   '/users': {
@@ -401,6 +401,7 @@ function downvote(item, username) {
 // Writes the current value of database to a YAML file
 function saveDatabase(){
   
+  config.set(database);
   config.save();
 }
 
@@ -466,6 +467,7 @@ const requestHandler = (request, response) => {
       response.end(JSON.stringify(methodResponse.body) || '');
     });
   }
+  saveDatabase();
 };
 
 const getRequestRoute = (url) => {
